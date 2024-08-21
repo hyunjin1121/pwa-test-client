@@ -8,23 +8,26 @@ interface Navigator {
   clearAppBadge: () => Promise<void>;
 }
 
-const socket = io('https://679e7f69483f8d0697057d18c41d0366.serveo.net');
-
-socket.on('connect', () => {
-  console.log('Connected to server'); // WebSocket 연결 확인
-});
-
-socket.on('disconnect', () => {
-  console.log('Disconnected from server'); // 연결 끊김 확인
-});
+const BACK_URL = 'https://a8be90ffe50659249e1116e8d98c34a6.serveo.net'
 
 const App = () => {
+  const socket = io(BACK_URL);
+
+  socket.on('connect', () => {
+    console.log('Connected to server'); // WebSocket 연결 확인
+  });
+
+  socket.on('disconnect', () => {
+    console.log('Disconnected from server'); // 연결 끊김 확인
+  });
+
   const [messages, setMessages] = useState<{ sender: string, message: string }[]>([]);
   const [inputValue, setInputValue] = useState<string>('');
   const [username, setUsername] = useState<string>('Anonymous');
   // const [unreadMessages, setUnreadMessages] = useState<number>(0);
 
-  useEffect(() => {
+  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+    useEffect(() => {
     socket.on('messageToClient', (message: { sender: string, message: string }) => {
       setMessages((prevMessages) => [...prevMessages, message]);
 
@@ -91,7 +94,7 @@ const App = () => {
     const registration = await navigator.serviceWorker.ready;
     const subscription = await registration.pushManager.subscribe({
       userVisibleOnly: true,
-      applicationServerKey: 'BLMuqANzgt98IBfsEIeO1a7ZMhtKV73qqxWvn44oRhxamelcLU3jzEPXrXR9S_qy8JwfzeJzKhgCX8cvHNB7QG4', // VAPID 공개 키
+      applicationServerKey: 'BK-SGSx5-Ex14UXxiYPOvdwrStOfJAG2kA9QFOAvNZFDO87AgBLMmhtj6CykFMFr9Hfhac613265R0e9yehQyoc', // VAPID 공개 키
     });
 
     if ('setAppBadge' in navigator) {
@@ -102,7 +105,7 @@ const App = () => {
 
     console.log('Subscription:', subscription);
 
-    await fetch('https://679e7f69483f8d0697057d18c41d0366.serveo.net/subscribe', {
+    await fetch(`${BACK_URL}/subscribe`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(subscription),
@@ -111,7 +114,7 @@ const App = () => {
 
   const badgeClear = () => {
     if ('clearAppBadge' in navigator) {
-      (navigator as any).clearAppBadge(); // 배지 클리어
+      (navigator as any).clearAppBadge(5); // 배지 클리어
     } else {
       console.log('Badging API not supported');
     }
